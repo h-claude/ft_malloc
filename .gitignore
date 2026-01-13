@@ -1,0 +1,25 @@
+# Executables
+*.out
+*.exe
+*.o
+*.a
+*.so
+
+# Directories
+.vscode/
+.idea/
+build/
+dist/
+bin/
+
+# macOS
+.DS_Store
+*.swp
+*.swo
+
+# Valgrind
+*.suppression
+vgcore.*
+
+# Dependencies
+*.d
