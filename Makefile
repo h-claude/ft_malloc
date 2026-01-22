@@ -2,7 +2,9 @@ NAME		= libft_malloc.so
 
 SRCS		= srcs/malloc.c \
 			  srcs/free.c \
-			  srcs/realloc.c 
+			  srcs/realloc.c \
+			  srcs/utils.c \
+			  srcs/visualizer.c # a supprimer
 
 OBJS_DIR	= objs
 OBJS		= $(SRCS:srcs/%.c=$(OBJS_DIR)/%.o)
