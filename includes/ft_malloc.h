@@ -6,7 +6,7 @@
 /*   By: hclaude <hclaude@student.42mulhouse.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/13 17:57:26 by hclaude           #+#    #+#             */
-/*   Updated: 2026/01/22 19:02:59 by hclaude          ###   ########.fr       */
+/*   Updated: 2026/01/28 18:14:11 by hclaude          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,12 +18,12 @@
 #include <sys/resource.h>
 #include <pthread.h>
 
-#define BLOCKS_32 0
-#define BLOCKS_64 1
-#define BLOCKS_128 2
-#define BLOCKS_256 3
-#define BLOCKS_512 4
-#define BLOCKS_1024 5
+#define BLOCKS_32 0 // In reality its a block of size 16 bytes
+#define BLOCKS_64 1 // In reality its a block of size 48 bytes
+#define BLOCKS_128 2 // In reality its a block of size 112 bytes
+#define BLOCKS_256 3 // In reality its a block of size 240 bytes
+#define BLOCKS_512 4 // In reality its a block of size 496 bytes
+#define BLOCKS_1024 5 // In reality its a block of size 992 bytes6 m
 
 #define DEFAULT_PAGE_COUNT 16
 
@@ -66,7 +66,7 @@ void visualize_memory(int detailed);
 // Private functions
 
 int init_data();
-int size_to_size_index(int size);
+int size_to_size_index(size_t size);
 t_block *get_last_block(int size_index, int is_allocated);
 
 #endif

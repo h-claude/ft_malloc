@@ -6,27 +6,25 @@
 /*   By: hclaude <hclaude@student.42mulhouse.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/13 19:49:24 by hclaude           #+#    #+#             */
-/*   Updated: 2026/01/22 19:02:50 by hclaude          ###   ########.fr       */
+/*   Updated: 2026/01/28 18:25:37 by hclaude          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_malloc.h"
 
-int	size_to_size_index(int size)
+int	size_to_size_index(size_t size)
 {
-	if (size == 32)
+	if (size <= 0 || size > 1024)
+		return (-1);
+
+	if (size <= 32)
 		return (BLOCKS_32);
-	else if (size == 64)
-		return (BLOCKS_64);
-	else if (size == 128)
-		return (BLOCKS_128);
-	else if (size == 256)
-		return (BLOCKS_256);
-	else if (size == 512)
-		return (BLOCKS_512);
-	else if (size == 1024)
-		return (BLOCKS_1024);
-	return (-1);
+
+	size_t rounded = 32;
+	while (rounded < size)
+		rounded <<= 1;
+
+	return (63 - __builtin_clzl(rounded) - 5);
 }
 
 t_block* get_last_block(int size_index, int is_allocated)
@@ -83,8 +81,6 @@ int init_data()
 {
 	void *ptr;
 
-	if (pthread_mutex_lock(&g_mutex) != 0)
-		return (-1);
 	if (g_pagesize == 0)
 	{
 		g_pagesize = getpagesize();
@@ -103,8 +99,6 @@ int init_data()
 			return (-1);
 		page_number_distributor(ptr);
 	}
-	if (pthread_mutex_unlock(&g_mutex) != 0)
-		return (-1);
 	return (0);
 }
 
