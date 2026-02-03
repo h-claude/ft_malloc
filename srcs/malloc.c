@@ -6,7 +6,7 @@
 /*   By: hclaude <hclaude@student.42mulhouse.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/13 19:48:46 by hclaude           #+#    #+#             */
-/*   Updated: 2026/01/28 18:36:33 by hclaude          ###   ########.fr       */
+/*   Updated: 2026/01/29 19:05:45 by hclaude          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -126,4 +126,14 @@ note :
 
 Quand j'alloue je mets pas a la fin mais au debut
 Pour la fusion je check dans la memoire + sa taille pour voir si le prochain est libre ou non et dans ce cas le fusionner
+
+Quand je free je dois fusionner avec le suivant ou le precedent si possible
+quand j'alloue soit je prends le premier bloc libre soit je split
+un bloc plus gros au dessus.
+
+A chaque mmap je dois maj ma structure et enregistrer la page allouee pour m'aider a fusionner
+
+ajouter dans chaque block un flag pour savoir si il est libre ou non
+
+surement devoir ajouter des variables pour alligner mon header
 */

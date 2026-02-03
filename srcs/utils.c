@@ -6,7 +6,7 @@
 /*   By: hclaude <hclaude@student.42mulhouse.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/13 19:49:24 by hclaude           #+#    #+#             */
-/*   Updated: 2026/01/28 18:25:37 by hclaude          ###   ########.fr       */
+/*   Updated: 2026/01/29 19:05:51 by hclaude          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,7 @@ t_block* get_last_block(int size_index, int is_allocated)
 void page_number_distributor(void* current_ptr)
 {
 	int i = 0;
-	int block_sizes[] = {32, 64, 128, 256, 512, 1024};
+	short block_sizes[] = {32, 64, 128, 256, 512, 1024};
 	int base_pages = DEFAULT_PAGE_COUNT / 6;
 	int remainder = DEFAULT_PAGE_COUNT % 6;
 

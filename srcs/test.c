@@ -3,12 +3,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "../includes/ft_malloc.h"
+#include <stdalign.h>
 
 int main()
 {
 	char *str;
 
 	printf("--- ETAT INITIAL ---\n");
+	printf("taille de t_block: %zu\n", sizeof(t_block));
 	// On appelle malloc(0) juste pour forcer le init_data() si besoin,
 	// ou on peut appeler init_data() directement si on le rendait public.
 	// Ici, le premier malloc fera l'init.

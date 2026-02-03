@@ -6,7 +6,7 @@
 /*   By: hclaude <hclaude@student.42mulhouse.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/13 17:57:26 by hclaude           #+#    #+#             */
-/*   Updated: 2026/01/28 18:14:11 by hclaude          ###   ########.fr       */
+/*   Updated: 2026/02/02 11:46:47 by hclaude          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 #include <unistd.h>
 #include <sys/resource.h>
 #include <pthread.h>
+#include <stdbool.h>
 
 #define BLOCKS_32 0 // In reality its a block of size 16 bytes
 #define BLOCKS_64 1 // In reality its a block of size 48 bytes
@@ -29,8 +30,8 @@
 
 typedef struct s_block
 {
-	struct s_block *next;
-	size_t size;
+	struct s_block	*next;
+	size_t			size;
 } t_block;
 
 typedef struct s_free_blocks
