@@ -6,7 +6,7 @@
 /*   By: hclaude <hclaude@student.42mulhouse.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/13 19:48:46 by hclaude           #+#    #+#             */
-/*   Updated: 2026/01/29 19:05:45 by hclaude          ###   ########.fr       */
+/*   Updated: 2026/02/04 19:10:10 by hclaude          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@ t_data g_data = {0};
 pthread_mutex_t g_mutex = PTHREAD_MUTEX_INITIALIZER;
 int g_pagesize = 0;
 
-//void *ft_malloc(size_t size)
+// void *ft_malloc(size_t size)
 //{
 //	if (g_pagesize == 0)
 //	{
@@ -50,16 +50,54 @@ int g_pagesize = 0;
 //	return (NULL);
 //}
 
-#include <stdio.h>
+void get_more_blocks(int index_size)
+{
+	t_block *tmp_block;
+	t_block *new_block;
+	int tmp_index = index_size;
 
-void* alloc_block(int index_size)
+	tmp_index++;
+	while (!g_data.free_blocks.size_blocks[index_size] && tmp_index < 6 && tmp_index > 0 && tmp_index != index_size)
+	{
+		if (!g_data.free_blocks.size_blocks[tmp_index])
+			tmp_index++;
+		else
+		{
+			tmp_block = g_data.free_blocks.blocks[tmp_index];
+			if (!tmp_block)
+				break;
+			g_data.free_blocks.blocks[tmp_index] = tmp_block->next;
+			g_data.free_blocks.size_blocks[tmp_index]--;
+			size_t block_size = SIZE_VALUE(tmp_block->size);
+			new_block = (t_block *)((char *)tmp_block + block_size / 2);
+			tmp_block->size = SET_FREE(block_size / 2);
+			new_block->size = SET_FREE(block_size / 2);
+			tmp_index = size_to_size_index(block_size / 2);
+			tmp_block->next = new_block;
+			new_block->next = g_data.free_blocks.blocks[tmp_index];
+			g_data.free_blocks.blocks[tmp_index] = tmp_block;
+			g_data.free_blocks.size_blocks[tmp_index] += 2;
+		}
+	}
+	// if (!g_data.free_blocks.size_blocks[index_size])
+	// init_data();
+}
+
+void *alloc_block(int index_size)
 {
 	t_block *ret_ptr;
 
 	if (!g_data.free_blocks.size_blocks[index_size])
-		return (pthread_mutex_unlock(&g_mutex), NULL);
+	{
+		get_more_blocks(index_size);
+		if (!g_data.free_blocks.size_blocks[index_size])
+		{
+			return (pthread_mutex_unlock(&g_mutex), NULL);
+		}
+	}
 	ret_ptr = g_data.free_blocks.blocks[index_size];
 	g_data.free_blocks.blocks[index_size] = ret_ptr->next;
+	ret_ptr->size = SET_ALLOC(ret_ptr->size);
 	ret_ptr->next = g_data.allocated_blocks.blocks[index_size];
 	g_data.allocated_blocks.blocks[index_size] = ret_ptr;
 	g_data.free_blocks.size_blocks[index_size]--;
@@ -68,11 +106,25 @@ void* alloc_block(int index_size)
 	return ((void *)ret_ptr + sizeof(t_block));
 }
 
-void* alloc_big_block(size_t size)
+void *alloc_big_block(size_t size)
 {
-	(void)size;
+	void *ptr;
+	t_block *header;
+
+	ptr = mmap(NULL, size + sizeof(t_block), PROT_READ | PROT_WRITE,
+			   MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+	if (ptr == MAP_FAILED)
+	{
+		pthread_mutex_unlock(&g_mutex);
+		return (NULL);
+	}
+	header = (t_block *)ptr;
+	header->size = size;
+	header->next = g_data.big_blocks.blocks;
+	g_data.big_blocks.blocks = header;
+	g_data.big_blocks.size_blocks++;
 	pthread_mutex_unlock(&g_mutex);
-	return (NULL);
+	return ((void *)header + sizeof(t_block));
 }
 
 void *ft_malloc(size_t size)

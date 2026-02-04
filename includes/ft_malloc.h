@@ -6,7 +6,7 @@
 /*   By: hclaude <hclaude@student.42mulhouse.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/13 17:57:26 by hclaude           #+#    #+#             */
-/*   Updated: 2026/02/02 11:46:47 by hclaude          ###   ########.fr       */
+/*   Updated: 2026/02/04 19:08:20 by hclaude          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,19 +19,25 @@
 #include <pthread.h>
 #include <stdbool.h>
 
-#define BLOCKS_32 0 // In reality its a block of size 16 bytes
-#define BLOCKS_64 1 // In reality its a block of size 48 bytes
-#define BLOCKS_128 2 // In reality its a block of size 112 bytes
-#define BLOCKS_256 3 // In reality its a block of size 240 bytes
-#define BLOCKS_512 4 // In reality its a block of size 496 bytes
-#define BLOCKS_1024 5 // In reality its a block of size 992 bytes6 m
+#define BLOCKS_32 0	  // In reality its a block of size 16 bytes
+#define BLOCKS_64 1	  // In reality its a block of size 48 bytes
+#define BLOCKS_128 2  // In reality its a block of size 112 bytes
+#define BLOCKS_256 3  // In reality its a block of size 240 bytes
+#define BLOCKS_512 4  // In reality its a block of size 496 bytes
+#define BLOCKS_1024 5 // In reality its a block of size 992 bytes
+
+#define FLAG_FREE ((size_t)1)
+#define IS_FREE(sz) ((sz) & FLAG_FREE)
+#define SET_FREE(sz) ((sz) | FLAG_FREE)
+#define SET_ALLOC(sz) ((sz) & ~FLAG_FREE)
+#define SIZE_VALUE(sz) ((sz) & ~FLAG_FREE)
 
 #define DEFAULT_PAGE_COUNT 16
 
 typedef struct s_block
 {
-	struct s_block	*next;
-	size_t			size;
+	struct s_block *next;
+	size_t size;
 } t_block;
 
 typedef struct s_free_blocks
@@ -46,10 +52,17 @@ typedef struct s_allocated_blocks
 	int size_blocks[6];
 } t_allocated_blocks;
 
+typedef struct s_big_blocks
+{
+	t_block *blocks;
+	int size_blocks;
+} t_big_blocks;
+
 typedef struct s_data
 {
 	t_free_blocks free_blocks;
 	t_allocated_blocks allocated_blocks;
+	t_big_blocks big_blocks;
 } t_data;
 
 extern t_data g_data;

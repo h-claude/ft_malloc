@@ -28,16 +28,21 @@ int main()
 	ft_free(str);
 	visualize_memory(0);
 	void *test;
-	//while ((test = ft_malloc(6)))
-	//{
-	//	visualize_memory(0);
-	//	if (!test)
-	//		break;
-	//}
+	while ((test = ft_malloc(6)))
+	{
+		visualize_memory(0);
+		if (!test)
+			break;
+	}
 	str = ft_malloc(sizeof(char) * 64);
 	visualize_memory(0);
 	ft_free(str);
 	visualize_memory(0);
+	str = ft_malloc(sizeof(char) * 5000);
+	visualize_memory(0);
+	ft_free(str);
+	visualize_memory(0);
+
 
 	return 0;
 }

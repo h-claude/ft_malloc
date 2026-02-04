@@ -6,13 +6,13 @@
 /*   By: hclaude <hclaude@student.42mulhouse.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/13 19:49:24 by hclaude           #+#    #+#             */
-/*   Updated: 2026/01/29 19:05:51 by hclaude          ###   ########.fr       */
+/*   Updated: 2026/02/04 19:10:28 by hclaude          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_malloc.h"
 
-int	size_to_size_index(size_t size)
+int size_to_size_index(size_t size)
 {
 	if (size <= 0 || size > 1024)
 		return (-1);
@@ -27,7 +27,7 @@ int	size_to_size_index(size_t size)
 	return (63 - __builtin_clzl(rounded) - 5);
 }
 
-t_block* get_last_block(int size_index, int is_allocated)
+t_block *get_last_block(int size_index, int is_allocated)
 {
 	if (is_allocated)
 	{
@@ -45,12 +45,15 @@ t_block* get_last_block(int size_index, int is_allocated)
 	}
 }
 
-void page_number_distributor(void* current_ptr)
+void page_number_distributor(void *current_ptr)
 {
 	int i = 0;
 	short block_sizes[] = {32, 64, 128, 256, 512, 1024};
 	int base_pages = DEFAULT_PAGE_COUNT / 6;
 	int remainder = DEFAULT_PAGE_COUNT % 6;
+
+	if (!current_ptr || g_pagesize <= 0)
+		return;
 
 	while (i < 6)
 	{
@@ -58,20 +61,29 @@ void page_number_distributor(void* current_ptr)
 
 		if (pages > 0)
 		{
+			t_block *old_head = g_data.free_blocks.blocks[i];
+			t_block *new_head = (t_block *)current_ptr;
 			size_t zone_size = pages * g_pagesize;
 			size_t processed = 0;
+			int added_blocks = 0;
 
-			g_data.free_blocks.blocks[i] = (t_block *)current_ptr;
 			while (processed + block_sizes[i] <= zone_size) // faut que tu m'expliques
 			{
 				t_block *block = (t_block *)current_ptr;
-				block->size = block_sizes[i];
+				block->size = SET_FREE(block_sizes[i]);
 				block->next = (t_block *)(current_ptr + block_sizes[i]);
 				current_ptr += block_sizes[i];
 				processed += block_sizes[i];
-				g_data.free_blocks.size_blocks[i]++;
+				added_blocks++;
 			}
 			((t_block *)(current_ptr - block_sizes[i]))->next = NULL;
+			if (added_blocks > 0)
+			{
+				t_block *new_tail = (t_block *)(current_ptr - block_sizes[i]);
+				new_tail->next = old_head;
+				g_data.free_blocks.blocks[i] = new_head;
+			}
+			g_data.free_blocks.size_blocks[i] += added_blocks;
 		}
 		i++;
 	}
@@ -84,22 +96,19 @@ int init_data()
 	if (g_pagesize == 0)
 	{
 		g_pagesize = getpagesize();
-
 	}
-	if (g_data.free_blocks.size_blocks[BLOCKS_32] +
-			g_data.free_blocks.size_blocks[BLOCKS_64] +
-			g_data.free_blocks.size_blocks[BLOCKS_128] +
-			g_data.free_blocks.size_blocks[BLOCKS_256] +
-			g_data.free_blocks.size_blocks[BLOCKS_512] +
-			g_data.free_blocks.size_blocks[BLOCKS_1024] ==
-		0)
-	{
-		ptr = mmap(NULL, g_pagesize * DEFAULT_PAGE_COUNT, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
-		if (ptr == MAP_FAILED)
-			return (-1);
-		page_number_distributor(ptr);
-	}
+	// if (g_data.free_blocks.size_blocks[BLOCKS_32] +
+	//		g_data.free_blocks.size_blocks[BLOCKS_64] +
+	//		g_data.free_blocks.size_blocks[BLOCKS_128] +
+	//		g_data.free_blocks.size_blocks[BLOCKS_256] +
+	//		g_data.free_blocks.size_blocks[BLOCKS_512] +
+	//		g_data.free_blocks.size_blocks[BLOCKS_1024] ==
+	//	0)
+	//{
+	ptr = mmap(NULL, g_pagesize * DEFAULT_PAGE_COUNT, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+	if (ptr == MAP_FAILED)
+		return (-1);
+	page_number_distributor(ptr);
+	//}
 	return (0);
 }
-
-

@@ -23,7 +23,7 @@ static void print_block_chain(t_block *head, char *color)
 	while (current)
 	{
 		// Affiche : [ Adr | Size ] ->
-		printf("%s[%p | %zu]%s", color, (void *)current, current->size, RESET);
+		printf("%s[%p | %zu]%s", color, (void *)current, SIZE_VALUE(current->size), RESET);
 
 		current = current->next;
 		if (current)
@@ -79,6 +79,19 @@ void visualize_memory(int detailed)
 				   RED, g_data.allocated_blocks.size_blocks[i], RESET);
 		}
 		i++;
+	}
+	if (detailed)
+	{
+		printf("\n%s>>> ZONE: > 1024 bytes blocks %s\n", YELLOW, RESET);
+		printf("  %s[ALLOC LIST]%s (%d blocks)\n", RED, RESET, g_data.big_blocks.size_blocks);
+		printf("  └── ");
+		print_block_chain(g_data.big_blocks.blocks, RED);
+	}
+	else
+	{
+		printf("%-10s | %-15s | %s%-15d%s\n", ">1024",
+			   "-",
+			   RED, g_data.big_blocks.size_blocks, RESET);
 	}
 	printf("\n%s===============================================================%s\n\n", CYAN, RESET);
 }
