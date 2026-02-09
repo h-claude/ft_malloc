@@ -11,6 +11,7 @@ int main()
 
 	printf("--- ETAT INITIAL ---\n");
 	printf("taille de t_block: %zu\n", sizeof(t_block));
+	printf("taille de t_page: %zu\n", sizeof(t_arena));
 	// On appelle malloc(0) juste pour forcer le init_data() si besoin,
 	// ou on peut appeler init_data() directement si on le rendait public.
 	// Ici, le premier malloc fera l'init.
@@ -27,21 +28,21 @@ int main()
 	visualize_memory(0);
 	ft_free(str);
 	visualize_memory(0);
-	void *test;
-	while ((test = ft_malloc(6)))
-	{
-		visualize_memory(0);
-		if (!test)
-			break;
-	}
-	str = ft_malloc(sizeof(char) * 64);
-	visualize_memory(0);
-	ft_free(str);
-	visualize_memory(0);
-	str = ft_malloc(sizeof(char) * 5000);
-	visualize_memory(0);
-	ft_free(str);
-	visualize_memory(0);
+	//void *test;
+	//while ((test = ft_malloc(6)))
+	//{
+	//	visualize_memory(0);
+	//	if (!test)
+	//		break;
+	//}
+	//str = ft_malloc(sizeof(char) * 64);
+	//visualize_memory(0);
+	//ft_free(str);
+	//visualize_memory(0);
+	//str = ft_malloc(sizeof(char) * 5000);
+	//visualize_memory(0);
+	//ft_free(str);
+	//visualize_memory(0);
 
 
 	return 0;

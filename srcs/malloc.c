@@ -6,7 +6,7 @@
 /*   By: hclaude <hclaude@student.42mulhouse.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/13 19:48:46 by hclaude           #+#    #+#             */
-/*   Updated: 2026/02/04 19:10:10 by hclaude          ###   ########.fr       */
+/*   Updated: 2026/02/09 18:19:10 by hclaude          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,8 +79,8 @@ void get_more_blocks(int index_size)
 			g_data.free_blocks.size_blocks[tmp_index] += 2;
 		}
 	}
-	// if (!g_data.free_blocks.size_blocks[index_size])
-	// init_data();
+	if (!g_data.free_blocks.size_blocks[index_size])
+		init_data();
 }
 
 void *alloc_block(int index_size)

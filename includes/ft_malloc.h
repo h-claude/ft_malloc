@@ -6,7 +6,7 @@
 /*   By: hclaude <hclaude@student.42mulhouse.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/13 17:57:26 by hclaude           #+#    #+#             */
-/*   Updated: 2026/02/04 19:08:20 by hclaude          ###   ########.fr       */
+/*   Updated: 2026/02/09 18:23:14 by hclaude          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,7 @@
 #define SIZE_VALUE(sz) ((sz) & ~FLAG_FREE)
 
 #define DEFAULT_PAGE_COUNT 16
+#define PAGE_SIZE (DEFAULT_PAGE_COUNT * g_pagesize + sizeof(t_arena))
 
 typedef struct s_block
 {
@@ -58,11 +59,17 @@ typedef struct s_big_blocks
 	int size_blocks;
 } t_big_blocks;
 
+typedef struct s_arena
+{
+	struct s_arena *next;
+} t_arena;
+
 typedef struct s_data
 {
 	t_free_blocks free_blocks;
 	t_allocated_blocks allocated_blocks;
 	t_big_blocks big_blocks;
+	t_arena *arena;
 } t_data;
 
 extern t_data g_data;

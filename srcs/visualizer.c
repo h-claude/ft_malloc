@@ -9,6 +9,34 @@
 #define BLUE "\033[34m"	  // Pour les adresses
 #define CYAN "\033[36m"	  // Pour les infos
 
+static void print_arenas(void)
+{
+	t_arena *current = g_data.arena;
+	size_t arena_size = (size_t)g_pagesize * DEFAULT_PAGE_COUNT + sizeof(t_arena);
+	int count = 0;
+
+	printf("%s[ARENAS]%s (size: %zu bytes)\n", CYAN, RESET, arena_size);
+	if (!current)
+	{
+		printf("  %s(NULL)%s\n", BLUE, RESET);
+		return;
+	}
+	while (current)
+	{
+		void *start = (void *)current;
+		void *end = (void *)((char *)current + arena_size);
+		count++;
+		printf("  %s[ARENA %d]%s %s%p%s - %s%p%s | %ssize:%s %zu bytes\n",
+			   YELLOW, count, RESET,
+			   BLUE, start, RESET,
+			   BLUE, end, RESET,
+			   CYAN, RESET, arena_size);
+		current = current->next;
+	}
+	printf("  %sTotal arenas:%s %d (%s%zu bytes%s)\n",
+		   CYAN, RESET, count, CYAN, (size_t)count * arena_size, RESET);
+}
+
 static void print_block_chain(t_block *head, char *color)
 {
 	t_block *current = head;
@@ -51,6 +79,8 @@ void visualize_memory(int detailed)
 		printf("%s[!] Data not initialized yet (g_pagesize is 0)%s\n", RED, RESET);
 		return;
 	}
+
+	print_arenas();
 
 	if (!detailed)
 	{

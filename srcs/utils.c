@@ -6,7 +6,7 @@
 /*   By: hclaude <hclaude@student.42mulhouse.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/13 19:49:24 by hclaude           #+#    #+#             */
-/*   Updated: 2026/02/04 19:10:28 by hclaude          ###   ########.fr       */
+/*   Updated: 2026/02/09 18:22:44 by hclaude          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,10 +92,14 @@ void page_number_distributor(void *current_ptr)
 int init_data()
 {
 	void *ptr;
+	t_arena *last_arena;
 
 	if (g_pagesize == 0)
 	{
 		g_pagesize = getpagesize();
+		g_data.arena = NULL;
+		g_data.big_blocks.blocks = NULL;
+		g_data.big_blocks.size_blocks = 0;
 	}
 	// if (g_data.free_blocks.size_blocks[BLOCKS_32] +
 	//		g_data.free_blocks.size_blocks[BLOCKS_64] +
@@ -105,9 +109,13 @@ int init_data()
 	//		g_data.free_blocks.size_blocks[BLOCKS_1024] ==
 	//	0)
 	//{
-	ptr = mmap(NULL, g_pagesize * DEFAULT_PAGE_COUNT, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+	ptr = mmap(NULL, g_pagesize * DEFAULT_PAGE_COUNT + sizeof(t_arena), PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
 	if (ptr == MAP_FAILED)
 		return (-1);
+	last_arena = g_data.arena;
+	g_data.arena = (t_arena *)ptr;
+	g_data.arena->next = last_arena;
+	ptr += sizeof(t_arena);
 	page_number_distributor(ptr);
 	//}
 	return (0);
