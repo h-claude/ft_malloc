@@ -23,3 +23,5 @@ vgcore.*
 
 # Dependencies
 *.d
+
+a.out.dSYM

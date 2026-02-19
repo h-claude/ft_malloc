@@ -6,7 +6,7 @@
 /*   By: hclaude <hclaude@student.42mulhouse.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/13 19:48:46 by hclaude           #+#    #+#             */
-/*   Updated: 2026/02/09 18:19:10 by hclaude          ###   ########.fr       */
+/*   Updated: 2026/02/19 15:01:15 by hclaude          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -119,7 +119,7 @@ void *alloc_big_block(size_t size)
 		return (NULL);
 	}
 	header = (t_block *)ptr;
-	header->size = size;
+	header->size = SET_ALLOC(size);
 	header->next = g_data.big_blocks.blocks;
 	g_data.big_blocks.blocks = header;
 	g_data.big_blocks.size_blocks++;

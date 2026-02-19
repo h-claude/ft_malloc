@@ -4,13 +4,14 @@ SRCS		= srcs/malloc.c \
 			  srcs/free.c \
 			  srcs/realloc.c \
 			  srcs/utils.c \
+			  srcs/show_alloc_mem.c \
 			  srcs/visualizer.c # a supprimer
 
 OBJS_DIR	= objs
 OBJS		= $(SRCS:srcs/%.c=$(OBJS_DIR)/%.o)
 
 CC			= gcc
-CFLAGS		= -Wall -Wextra -Werror -fPIC -Iincludes
+CFLAGS		= -Wall -Wextra -Werror -fPIC -Iincludes -g3
 LDFLAGS		= -shared
 
 all:		$(OBJS_DIR) $(NAME)

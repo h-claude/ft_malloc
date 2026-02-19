@@ -6,7 +6,7 @@
 /*   By: hclaude <hclaude@student.42mulhouse.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/13 19:49:24 by hclaude           #+#    #+#             */
-/*   Updated: 2026/02/09 18:22:44 by hclaude          ###   ########.fr       */
+/*   Updated: 2026/02/19 15:01:02 by hclaude          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,50 @@ t_block *get_last_block(int size_index, int is_allocated)
 			last_block = last_block->next;
 		return (last_block);
 	}
+}
+
+t_block *get_previous_block(t_block *block, int size_index, int is_allocated)
+{
+	t_block *current;
+
+	if (is_allocated)
+		current = g_data.allocated_blocks.blocks[size_index];
+	else
+		current = g_data.free_blocks.blocks[size_index];
+
+	if (!current || current == block)
+		return (NULL);
+	while (current && current->next != block)
+		current = current->next;
+	return (current);
+}
+
+t_block *remove_block(t_block *block, int is_allocated)
+{
+	t_block *prev;
+	int size_index;
+
+	if (!block)
+		return (NULL);
+
+	size_index = size_to_size_index(SIZE_VALUE(block->size));
+	prev = get_previous_block(block, size_index, is_allocated);
+
+	if (prev)
+		prev->next = block->next;
+	else
+	{
+		if (is_allocated)
+			g_data.allocated_blocks.blocks[size_index] = block->next;
+		else
+			g_data.free_blocks.blocks[size_index] = block->next;
+	}
+	if (is_allocated)
+		g_data.allocated_blocks.size_blocks[size_index]--;
+	else
+		g_data.free_blocks.size_blocks[size_index]--;
+	block->next = NULL;
+	return (block);
 }
 
 void page_number_distributor(void *current_ptr)
@@ -118,5 +162,21 @@ int init_data()
 	ptr += sizeof(t_arena);
 	page_number_distributor(ptr);
 	//}
+	return (0);
+}
+
+// make a function that return 1 or 0 if the adress of the block is in the arena or not
+int Is_In_ArenA(void *adress)
+{
+	t_arena *arena_adress = g_data.arena;
+
+	while (arena_adress)
+	{
+		void *start = (void *)arena_adress + sizeof(t_arena);
+		void *end = (void *)arena_adress + ARENA_SIZE;
+		if (adress >= start && adress < end)
+			return (1);
+		arena_adress = arena_adress->next;
+	}
 	return (0);
 }

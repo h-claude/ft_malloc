@@ -113,13 +113,13 @@ void visualize_memory(int detailed)
 	if (detailed)
 	{
 		printf("\n%s>>> ZONE: > 1024 bytes blocks %s\n", YELLOW, RESET);
-		printf("  %s[ALLOC LIST]%s (%d blocks)\n", RED, RESET, g_data.big_blocks.size_blocks);
+		printf("  %s[ALLOC LIST]%s (%zu blocks)\n", RED, RESET, g_data.big_blocks.size_blocks);
 		printf("  └── ");
 		print_block_chain(g_data.big_blocks.blocks, RED);
 	}
 	else
 	{
-		printf("%-10s | %-15s | %s%-15d%s\n", ">1024",
+		printf("%-10s | %-15s | %s%-15zu%s\n", ">1024",
 			   "-",
 			   RED, g_data.big_blocks.size_blocks, RESET);
 	}

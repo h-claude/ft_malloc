@@ -6,7 +6,7 @@
 /*   By: hclaude <hclaude@student.42mulhouse.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/22 18:42:03 by hclaude           #+#    #+#             */
-/*   Updated: 2026/02/09 17:47:02 by hclaude          ###   ########.fr       */
+/*   Updated: 2026/02/19 14:37:39 by hclaude          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ void free_big_block(t_block *header)
 	t_block *big_prev;
 	size_t total_size;
 
-	total_size = header->size + sizeof(t_block);
+	total_size = SIZE_VALUE(header->size) + sizeof(t_block);
 	pthread_mutex_lock(&g_mutex);
 	big_curr = g_data.big_blocks.blocks;
 	big_prev = NULL;
@@ -86,6 +86,20 @@ void ft_free(void *ptr)
 	g_data.allocated_blocks.size_blocks[size_index]--;
 
 	header->size = SET_FREE(header->size);
+	t_block *next_header = (t_block *)((char *)header + SIZE_VALUE(header->size));
+	int free_count = g_data.free_blocks.size_blocks[size_index];
+	// new process giga chad now we search the next block from the header and we try to put them together
+
+	if (free_count > MIN_BLOCKS_TO_DEFRAG && Is_In_ArenA(next_header))
+	{
+		if (SIZE_VALUE(header->size) == SIZE_VALUE(next_header->size) && IS_FREE(next_header->size) && SIZE_VALUE(header->size) <= 1024)
+		{
+			remove_block(next_header, 0);
+			header->size = SIZE_VALUE(header->size) * 2;
+			size_index = size_to_size_index(SIZE_VALUE(header->size));
+		}
+	}
+
 	header->next = g_data.free_blocks.blocks[size_index];
 	g_data.free_blocks.blocks[size_index] = header;
 	g_data.free_blocks.size_blocks[size_index]++;

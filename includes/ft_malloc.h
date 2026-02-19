@@ -6,7 +6,7 @@
 /*   By: hclaude <hclaude@student.42mulhouse.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/13 17:57:26 by hclaude           #+#    #+#             */
-/*   Updated: 2026/02/09 18:23:14 by hclaude          ###   ########.fr       */
+/*   Updated: 2026/02/19 15:30:34 by hclaude          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,10 @@
 #include <sys/resource.h>
 #include <pthread.h>
 #include <stdbool.h>
+#include <string.h>
+
+//erase after !!!!!
+#include <stdio.h>
 
 #define BLOCKS_32 0	  // In reality its a block of size 16 bytes
 #define BLOCKS_64 1	  // In reality its a block of size 48 bytes
@@ -33,7 +37,9 @@
 #define SIZE_VALUE(sz) ((sz) & ~FLAG_FREE)
 
 #define DEFAULT_PAGE_COUNT 16
-#define PAGE_SIZE (DEFAULT_PAGE_COUNT * g_pagesize + sizeof(t_arena))
+#define ARENA_SIZE (DEFAULT_PAGE_COUNT * g_pagesize + sizeof(t_arena))
+
+#define MIN_BLOCKS_TO_DEFRAG 3
 
 typedef struct s_block
 {
@@ -56,7 +62,7 @@ typedef struct s_allocated_blocks
 typedef struct s_big_blocks
 {
 	t_block *blocks;
-	int size_blocks;
+	size_t size_blocks;
 } t_big_blocks;
 
 typedef struct s_arena
@@ -89,5 +95,7 @@ void visualize_memory(int detailed);
 int init_data();
 int size_to_size_index(size_t size);
 t_block *get_last_block(int size_index, int is_allocated);
+int Is_In_ArenA(void *adress);
+t_block *remove_block(t_block *block, int is_allocated);
 
 #endif
