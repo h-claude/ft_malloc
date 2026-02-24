@@ -6,7 +6,7 @@
 /*   By: hclaude <hclaude@student.42mulhouse.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/13 17:57:26 by hclaude           #+#    #+#             */
-/*   Updated: 2026/02/19 15:30:34 by hclaude          ###   ########.fr       */
+/*   Updated: 2026/02/24 18:33:23 by hclaude          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,5 +97,6 @@ int size_to_size_index(size_t size);
 t_block *get_last_block(int size_index, int is_allocated);
 int Is_In_ArenA(void *adress);
 t_block *remove_block(t_block *block, int is_allocated);
+int Is_In_BigBlocks(void *adress);
 
 #endif

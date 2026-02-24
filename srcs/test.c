@@ -105,7 +105,13 @@ int main()
 		ft_malloc(600);
 		counter++;
 	}
-	show_alloc_mem();
+	//show_alloc_mem();
+
+	void *p = ft_malloc((size_t)-2);
+	ft_free(p);
+	p = ft_malloc(2000);
+	ft_free(p);
+	ft_free(p);
 
 	return 0;
 }

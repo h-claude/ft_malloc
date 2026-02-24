@@ -6,7 +6,7 @@
 /*   By: hclaude <hclaude@student.42mulhouse.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/13 19:49:24 by hclaude           #+#    #+#             */
-/*   Updated: 2026/02/19 15:01:02 by hclaude          ###   ########.fr       */
+/*   Updated: 2026/02/24 18:33:08 by hclaude          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,8 @@ int size_to_size_index(size_t size)
 
 t_block *get_last_block(int size_index, int is_allocated)
 {
+	if (size_index < 0 || size_index > 5)
+		return (NULL);
 	if (is_allocated)
 	{
 		t_block *last_block = g_data.allocated_blocks.blocks[size_index];
@@ -165,7 +167,10 @@ int init_data()
 	return (0);
 }
 
-// make a function that return 1 or 0 if the adress of the block is in the arena or not
+/*
+	Checks if the given address belongs to any of the arenas.
+	Returns 1 if it does, 0 otherwise.
+*/
 int Is_In_ArenA(void *adress)
 {
 	t_arena *arena_adress = g_data.arena;
@@ -177,6 +182,21 @@ int Is_In_ArenA(void *adress)
 		if (adress >= start && adress < end)
 			return (1);
 		arena_adress = arena_adress->next;
+	}
+	return (0);
+}
+
+int Is_In_BigBlocks(void *adress)
+{
+	t_block *current = g_data.big_blocks.blocks;
+
+	while (current)
+	{
+		void *start = (void *)current + sizeof(t_block);
+		void *end = (void *)current + sizeof(t_block) + SIZE_VALUE(current->size);
+		if (adress >= start && adress < end)
+			return (1);
+		current = current->next;
 	}
 	return (0);
 }

@@ -6,7 +6,7 @@
 /*   By: hclaude <hclaude@student.42mulhouse.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/13 19:48:46 by hclaude           #+#    #+#             */
-/*   Updated: 2026/02/19 15:01:15 by hclaude          ###   ########.fr       */
+/*   Updated: 2026/02/24 18:18:13 by hclaude          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -139,7 +139,7 @@ void *ft_malloc(size_t size)
 			return (NULL);
 		}
 	}
-	if (size == 0)
+	if (size == 0 || size > SIZE_MAX - sizeof(t_block))
 	{
 		pthread_mutex_unlock(&g_mutex);
 		return (NULL);
@@ -147,7 +147,7 @@ void *ft_malloc(size_t size)
 
 	index_size = size_to_size_index(size + sizeof(t_block));
 
-	if (index_size == -1 && size > 1024)
+	if (index_size == -1 && size + sizeof(t_block) > 1024)
 		return (alloc_big_block(size));
 	else if (index_size == -1)
 		return pthread_mutex_unlock(&g_mutex), NULL;

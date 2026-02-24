@@ -6,7 +6,7 @@
 /*   By: hclaude <hclaude@student.42mulhouse.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 15:18:07 by hclaude           #+#    #+#             */
-/*   Updated: 2026/02/19 15:22:17 by hclaude          ###   ########.fr       */
+/*   Updated: 2026/02/24 18:13:32 by hclaude          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 void *ft_realloc(void *ptr, size_t size)
 {
-	if (size == 0)
+	if (size == 0 || size + sizeof(t_block) > SIZE_MAX)
 	{
 		ft_free(ptr);
 		return (NULL);
