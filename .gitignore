@@ -31,3 +31,4 @@ srcs/test.c
 srcs/test_full.c
 malloc_tests
 malloc_tests.dSYM
+run_demo

@@ -69,6 +69,7 @@ void *alloc_block(int index_size)
 	g_data.allocated_blocks.size_blocks[index_size]++;
 #ifdef MALLOC_DEBUG_BUILD
 	g_data.dbg_malloc_calls++;
+	g_data.dbg_live_mem += SIZE_VALUE(ret_ptr->size) - sizeof(t_block);
 #endif
 	pthread_mutex_unlock(&g_mutex);
 	return ((void *)ret_ptr + sizeof(t_block));
@@ -93,6 +94,7 @@ void *alloc_big_block(size_t size)
 	g_data.big_blocks.size_blocks++;
 #ifdef MALLOC_DEBUG_BUILD
 	g_data.dbg_malloc_calls++;
+	g_data.dbg_live_mem += size;
 #endif
 	pthread_mutex_unlock(&g_mutex);
 	return ((void *)header + sizeof(t_block));

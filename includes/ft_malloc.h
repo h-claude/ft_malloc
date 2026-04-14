@@ -19,6 +19,9 @@
 #include <pthread.h>
 #include <stdbool.h>
 #include <string.h>
+#ifdef MALLOC_DEBUG_BUILD
+# include <stdatomic.h>
+#endif
 
 #define BLOCKS_32 0	  // In reality its a block of size 16 bytes
 #define BLOCKS_64 1	  // In reality its a block of size 48 bytes
@@ -76,8 +79,9 @@ typedef struct s_data
 	t_arena *arena;
 	int pagesize;
 #ifdef MALLOC_DEBUG_BUILD
-	size_t dbg_malloc_calls;
-	size_t dbg_free_calls;
+	_Atomic size_t dbg_malloc_calls;
+	_Atomic size_t dbg_free_calls;
+	_Atomic size_t dbg_live_mem;
 #endif
 } t_data;
 

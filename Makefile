@@ -21,7 +21,7 @@ endif
 
 OBJS_DIR	= objs
 OBJS		= $(patsubst %.c,$(OBJS_DIR)/%.o,$(notdir $(SRCS)))
-LDFLAGS		= -shared
+LDFLAGS		= -shared -Wl,-install_name,$(abspath $(NAME)) -headerpad_max_install_names
 
 all:		$(OBJS_DIR) $(NAME) $(LINK_NAME)
 
@@ -48,10 +48,10 @@ fclean:		clean
 			rm -f $(NAME)
 			rm -f $(LINK_NAME)
 
-test:		all
-			$(CC) -Wall -Wextra -Iincludes -o run_tests test_malloc.c -L. -lft_malloc -lpthread
-			DYLD_LIBRARY_PATH=. LD_LIBRARY_PATH=. ./run_tests
+demo:		all
+			$(CC) -Wall -Wextra -Iincludes -o run_demo srcs/test.c -L. -lft_malloc -lpthread
+			MALLOC_DEBUG=1 DYLD_LIBRARY_PATH=. LD_LIBRARY_PATH=. ./run_demo
 
 re:			fclean all
 
-.PHONY:		all clean fclean re test
+.PHONY:		all clean fclean re demo

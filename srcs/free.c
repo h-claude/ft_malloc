@@ -35,6 +35,7 @@ void free_big_block(t_block *header)
 		g_data.big_blocks.size_blocks--;
 #ifdef MALLOC_DEBUG_BUILD
 		g_data.dbg_free_calls++;
+		g_data.dbg_live_mem -= SIZE_VALUE(header->size);
 #endif
 	}
 	pthread_mutex_unlock(&g_mutex);
@@ -66,6 +67,9 @@ void free(void *ptr)
 		return (void)pthread_mutex_unlock(&g_mutex);
 
 	size_t real_size = SIZE_VALUE(header->size);
+#ifdef MALLOC_DEBUG_BUILD
+	size_t dbg_alloc_size = real_size;
+#endif
 	size_index = size_to_size_index(real_size);
 
 	if (size_index == -1)
@@ -109,6 +113,7 @@ void free(void *ptr)
 	g_data.free_blocks.size_blocks[size_index]++;
 #ifdef MALLOC_DEBUG_BUILD
 	g_data.dbg_free_calls++;
+	g_data.dbg_live_mem -= dbg_alloc_size - sizeof(t_block);
 #endif
 	pthread_mutex_unlock(&g_mutex);
 }
