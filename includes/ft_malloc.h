@@ -6,7 +6,7 @@
 /*   By: hclaude <hclaude@student.42mulhouse.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/13 17:57:26 by hclaude           #+#    #+#             */
-/*   Updated: 2026/04/14 16:44:13 by hclaude          ###   ########.fr       */
+/*   Updated: 2026/04/15 01:05:16 by hclaude          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 #include <pthread.h>
 #include <stdbool.h>
 #include <string.h>
+#include <stdint.h>
 
 #define BLOCKS_32 0	  // In reality its a block of size 16 bytes
 #define BLOCKS_64 1	  // In reality its a block of size 48 bytes
