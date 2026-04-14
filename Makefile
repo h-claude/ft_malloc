@@ -11,11 +11,16 @@ SRCS		= srcs/malloc.c \
 			  srcs/utils.c \
 			  srcs/show_alloc_mem.c
 
-OBJS_DIR	= objs
-OBJS		= $(SRCS:srcs/%.c=$(OBJS_DIR)/%.o)
-
 CC			= gcc
 CFLAGS		= -Wall -Wextra -Werror -fPIC -Iincludes -g3 -fvisibility=hidden
+
+ifdef DEBUG
+SRCS		+= debug/debug.c
+CFLAGS		+= -DMALLOC_DEBUG_BUILD
+endif
+
+OBJS_DIR	= objs
+OBJS		= $(patsubst %.c,$(OBJS_DIR)/%.o,$(notdir $(SRCS)))
 LDFLAGS		= -shared
 
 all:		$(OBJS_DIR) $(NAME) $(LINK_NAME)
@@ -30,6 +35,9 @@ $(OBJS_DIR):
 			mkdir -p $(OBJS_DIR)
 
 $(OBJS_DIR)/%.o:	srcs/%.c
+			$(CC) $(CFLAGS) -c $< -o $@
+
+$(OBJS_DIR)/%.o:	debug/%.c
 			$(CC) $(CFLAGS) -c $< -o $@
 
 clean:

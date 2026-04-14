@@ -33,6 +33,9 @@ void free_big_block(t_block *header)
 		else
 			g_data.big_blocks.blocks = big_curr->next;
 		g_data.big_blocks.size_blocks--;
+#ifdef MALLOC_DEBUG_BUILD
+		g_data.dbg_free_calls++;
+#endif
 	}
 	pthread_mutex_unlock(&g_mutex);
 	munmap(header, total_size);
@@ -104,5 +107,8 @@ void free(void *ptr)
 	header->next = g_data.free_blocks.blocks[size_index];
 	g_data.free_blocks.blocks[size_index] = header;
 	g_data.free_blocks.size_blocks[size_index]++;
+#ifdef MALLOC_DEBUG_BUILD
+	g_data.dbg_free_calls++;
+#endif
 	pthread_mutex_unlock(&g_mutex);
 }

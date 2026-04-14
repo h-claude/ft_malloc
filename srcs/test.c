@@ -16,7 +16,7 @@ int main()
 	// ou on peut appeler init_data() directement si on le rendait public.
 	// Ici, le premier malloc fera l'init.
 
-	str = ft_malloc(sizeof(char) * 6);
+	str = malloc(sizeof(char) * 6);
 
 	str[0] = 'H';
 	str[1] = 'e';
@@ -25,14 +25,14 @@ int main()
 	str[4] = 'o';
 	str[5] = 0;
 	printf("String allocated: %s\n", str);
-	visualize_memory(0);
-	ft_free(str);
-	visualize_memory(0);
-	char *str2 = ft_malloc(sizeof(char) * 6);
-	ft_free(str);
-	visualize_memory(0);
-	ft_free(str2);
-	visualize_memory(0);
+	//visualize_memory(0);
+	free(str);
+	//visualize_memory(0);
+	char *str2 = malloc(sizeof(char) * 6);
+	free(str);
+	//visualize_memory(0);
+	free(str2);
+	//visualize_memory(0);
 
 	//// ===== TEST FRAGMENTATION + DEFRAGMENTATION =====
 	//printf("\n===== TEST FRAG/DEFRAG =====\n");
@@ -44,7 +44,7 @@ int main()
 	//i = 0;
 	//while (i < 2000)
 	//{
-	//	ptrs[i] = ft_malloc(20);
+	//	ptrs[i] = malloc(20);
 	//	i++;
 	//}
 	//visualize_memory(0);
@@ -54,7 +54,7 @@ int main()
 	//i = 0;
 	//while (i < 2000)
 	//{
-	//	ft_free(ptrs[i]);
+	//	free(ptrs[i]);
 	//	ptrs[i] = NULL;
 	//	i += 2;
 	//}
@@ -65,7 +65,7 @@ int main()
 	//i = 1;
 	//while (i < 2000)
 	//{
-	//	ft_free(ptrs[i]);
+	//	free(ptrs[i]);
 	//	ptrs[i] = NULL;
 	//	i += 2;
 	//}
@@ -76,7 +76,7 @@ int main()
 	//i = 0;
 	//while (i < 2000)
 	//{
-	//	ptrs[i] = ft_malloc(20);
+	//	ptrs[i] = malloc(20);
 	//	i++;
 	//}
 	//visualize_memory(0);
@@ -86,32 +86,32 @@ int main()
 	//i = 0;
 	//while (i < 2000)
 	//{
-	//	ft_free(ptrs[i]);
+	//	free(ptrs[i]);
 	//	i++;
 	//}
 	//visualize_memory(0);
 
-	ft_malloc(6);
-	ft_malloc(6);
-	ft_malloc(6);
-	ft_malloc(6);
-	ft_malloc(600);
-	ft_malloc(400);
-	ft_malloc(6000);
-	ft_malloc(6000);
+	malloc(6);
+	malloc(6);
+	malloc(6);
+	malloc(6);
+	malloc(600);
+	malloc(400);
+	malloc(6000);
+	malloc(6000);
 	int counter = 0;
-	while (counter < 100)
+	while (1)
 	{
-		ft_malloc(600);
+		malloc(600);
 		counter++;
 	}
 	//show_alloc_mem();
 
-	void *p = ft_malloc((size_t)-2);
-	ft_free(p);
-	p = ft_malloc(2000);
-	ft_free(p);
-	ft_free(p);
+	void *p = malloc((size_t)-2);
+	free(p);
+	p = malloc(2000);
+	free(p);
+	free(p);
 
 	return 0;
 }

@@ -137,8 +137,11 @@ void page_number_distributor(void *current_ptr)
 
 int init_data()
 {
-	void *ptr;
-	t_arena *last_arena;
+	void	*ptr;
+	t_arena	*last_arena;
+#ifdef MALLOC_DEBUG_BUILD
+	int		is_first = (g_data.pagesize == 0);
+#endif
 
 	if (g_data.pagesize == 0)
 	{
@@ -155,7 +158,10 @@ int init_data()
 	g_data.arena->next = last_arena;
 	ptr += sizeof(t_arena);
 	page_number_distributor(ptr);
-	//}
+#ifdef MALLOC_DEBUG_BUILD
+	if (is_first)
+		start_debug_thread();
+#endif
 	return (0);
 }
 

@@ -67,6 +67,9 @@ void *alloc_block(int index_size)
 	g_data.allocated_blocks.blocks[index_size] = ret_ptr;
 	g_data.free_blocks.size_blocks[index_size]--;
 	g_data.allocated_blocks.size_blocks[index_size]++;
+#ifdef MALLOC_DEBUG_BUILD
+	g_data.dbg_malloc_calls++;
+#endif
 	pthread_mutex_unlock(&g_mutex);
 	return ((void *)ret_ptr + sizeof(t_block));
 }
@@ -88,6 +91,9 @@ void *alloc_big_block(size_t size)
 	header->next = g_data.big_blocks.blocks;
 	g_data.big_blocks.blocks = header;
 	g_data.big_blocks.size_blocks++;
+#ifdef MALLOC_DEBUG_BUILD
+	g_data.dbg_malloc_calls++;
+#endif
 	pthread_mutex_unlock(&g_mutex);
 	return ((void *)header + sizeof(t_block));
 }

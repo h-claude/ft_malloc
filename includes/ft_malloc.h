@@ -75,6 +75,10 @@ typedef struct s_data
 	t_big_blocks big_blocks;
 	t_arena *arena;
 	int pagesize;
+#ifdef MALLOC_DEBUG_BUILD
+	size_t dbg_malloc_calls;
+	size_t dbg_free_calls;
+#endif
 } t_data;
 
 extern t_data g_data;
@@ -98,5 +102,8 @@ t_block *get_last_block(int size_index, int is_allocated);
 int Is_In_ArenA(void *adress);
 t_block *remove_block(t_block *block, int is_allocated);
 int Is_In_BigBlocks(void *adress);
+#ifdef MALLOC_DEBUG_BUILD
+void start_debug_thread(void);
+#endif
 
 #endif
