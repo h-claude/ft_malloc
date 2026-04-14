@@ -6,7 +6,7 @@
 /*   By: hclaude <hclaude@student.42mulhouse.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/22 18:42:03 by hclaude           #+#    #+#             */
-/*   Updated: 2026/02/24 18:35:52 by hclaude          ###   ########.fr       */
+/*   Updated: 2026/04/14 15:54:52 by hclaude          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,6 @@ void free_big_block(t_block *header)
 	size_t total_size;
 
 	total_size = SIZE_VALUE(header->size) + sizeof(t_block);
-	pthread_mutex_lock(&g_mutex);
 	big_curr = g_data.big_blocks.blocks;
 	big_prev = NULL;
 	while (big_curr && big_curr != header)
@@ -37,54 +36,38 @@ void free_big_block(t_block *header)
 	}
 	pthread_mutex_unlock(&g_mutex);
 	munmap(header, total_size);
-	return;
 }
 
-void ft_free(void *ptr)
+void free(void *ptr)
 {
 	t_block *header;
 	int size_index;
 	t_block *curr;
 	t_block *prev;
+	int in_arena;
+	int in_big;
 
 	if (!ptr)
 		return;
 
+	pthread_mutex_lock(&g_mutex);
 	header = (t_block *)((char *)ptr - sizeof(t_block));
-	if (!header)
-		return;
+	in_arena = Is_In_ArenA(header);
+	in_big = Is_In_BigBlocks(ptr);
+	if (!in_arena && !in_big)
+		return (void)pthread_mutex_unlock(&g_mutex);
+	if (in_big)
+		return (free_big_block(header));
 
-	if (!Is_In_ArenA(header))
-		return;
-
-	if (!Is_In_BigBlocks(header))
-		return;
-
-	if (header->size == 0)
-		return;
-	if (header->size > 1024)
-	{
-		free_big_block(header);
-		return;
-	}
-
-	if (IS_FREE(header->size))
-		return;
+	if (header->size == 0 || IS_FREE(header->size))
+		return (void)pthread_mutex_unlock(&g_mutex);
 
 	size_t real_size = SIZE_VALUE(header->size);
 	size_index = size_to_size_index(real_size);
 
-	//if (SIZE_VALUE(SIZE_VALUE(header->size)) > 1024)
-	//{
-	//	free_big_block(header);
-	//	return;
-	//}
-
-
 	if (size_index == -1)
-		return;
+		return (void)pthread_mutex_unlock(&g_mutex);
 
-	pthread_mutex_lock(&g_mutex);
 	curr = g_data.allocated_blocks.blocks[size_index];
 	prev = NULL;
 
@@ -113,8 +96,7 @@ void ft_free(void *ptr)
 		if (SIZE_VALUE(header->size) == SIZE_VALUE(next_header->size) && IS_FREE(next_header->size) && SIZE_VALUE(header->size) <= 512)
 		{
 			remove_block(next_header, 0);
-			header->size = SIZE_VALUE(header->size) * 2;
-			SET_FREE(header->size);
+			header->size = SET_FREE(SIZE_VALUE(header->size) * 2);
 			size_index = size_to_size_index(SIZE_VALUE(header->size));
 		}
 	}

@@ -6,7 +6,7 @@
 /*   By: hclaude <hclaude@student.42mulhouse.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/13 17:57:26 by hclaude           #+#    #+#             */
-/*   Updated: 2026/02/24 18:33:23 by hclaude          ###   ########.fr       */
+/*   Updated: 2026/04/14 16:44:13 by hclaude          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,9 +19,6 @@
 #include <pthread.h>
 #include <stdbool.h>
 #include <string.h>
-
-//erase after !!!!!
-#include <stdio.h>
 
 #define BLOCKS_32 0	  // In reality its a block of size 16 bytes
 #define BLOCKS_64 1	  // In reality its a block of size 48 bytes
@@ -36,8 +33,8 @@
 #define SET_ALLOC(sz) ((sz) & ~FLAG_FREE)
 #define SIZE_VALUE(sz) ((sz) & ~FLAG_FREE)
 
-#define DEFAULT_PAGE_COUNT 16
-#define ARENA_SIZE (DEFAULT_PAGE_COUNT * g_pagesize + sizeof(t_arena))
+#define DEFAULT_PAGE_COUNT 128
+#define ARENA_SIZE (DEFAULT_PAGE_COUNT * g_data.pagesize + sizeof(t_arena))
 
 #define MIN_BLOCKS_TO_DEFRAG 3
 
@@ -68,6 +65,7 @@ typedef struct s_big_blocks
 typedef struct s_arena
 {
 	struct s_arena *next;
+	char			_pad[8];
 } t_arena;
 
 typedef struct s_data
@@ -76,19 +74,21 @@ typedef struct s_data
 	t_allocated_blocks allocated_blocks;
 	t_big_blocks big_blocks;
 	t_arena *arena;
+	int pagesize;
 } t_data;
 
 extern t_data g_data;
 extern pthread_mutex_t g_mutex;
-extern int g_pagesize;
+
+// it allows to export only the public functions (malloc, free, realloc, show_alloc_mem) and keep the rest hidden
+#define PUBLIC __attribute__((visibility("default")))
 
 // Shared functions
 
-void *ft_malloc(size_t size) __attribute__((alloc_size(1)));
-void ft_free(void *ptr);
-void *ft_realloc(void *ptr, size_t size);
-void *show_alloc_mem(void);
-void visualize_memory(int detailed);
+PUBLIC void *malloc(size_t size) __attribute__((alloc_size(1)));
+PUBLIC void free(void *ptr);
+PUBLIC void *realloc(void *ptr, size_t size);
+PUBLIC void show_alloc_mem(void);
 
 // Private functions
 

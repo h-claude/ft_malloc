@@ -1,23 +1,30 @@
-NAME		= libft_malloc.so
+ifeq ($(HOSTTYPE),)
+HOSTTYPE := $(shell uname -m)_$(shell uname -s)
+endif
+
+NAME		= libft_malloc_$(HOSTTYPE).so
+LINK_NAME	= libft_malloc.so
 
 SRCS		= srcs/malloc.c \
 			  srcs/free.c \
 			  srcs/realloc.c \
 			  srcs/utils.c \
-			  srcs/show_alloc_mem.c \
-			  srcs/visualizer.c # a supprimer
+			  srcs/show_alloc_mem.c
 
 OBJS_DIR	= objs
 OBJS		= $(SRCS:srcs/%.c=$(OBJS_DIR)/%.o)
 
 CC			= gcc
-CFLAGS		= -Wall -Wextra -Werror -fPIC -Iincludes -g3
+CFLAGS		= -Wall -Wextra -Werror -fPIC -Iincludes -g3 -fvisibility=hidden
 LDFLAGS		= -shared
 
-all:		$(OBJS_DIR) $(NAME)
+all:		$(OBJS_DIR) $(NAME) $(LINK_NAME)
 
 $(NAME):	$(OBJS)
 			$(CC) $(LDFLAGS) -o $(NAME) $(OBJS)
+
+$(LINK_NAME):	$(NAME)
+			ln -sf $(NAME) $(LINK_NAME)
 
 $(OBJS_DIR):
 			mkdir -p $(OBJS_DIR)
@@ -31,7 +38,12 @@ clean:
 fclean:		clean
 			rm -rf $(OBJS_DIR)
 			rm -f $(NAME)
+			rm -f $(LINK_NAME)
+
+test:		all
+			$(CC) -Wall -Wextra -Iincludes -o run_tests test_malloc.c -L. -lft_malloc -lpthread
+			DYLD_LIBRARY_PATH=. LD_LIBRARY_PATH=. ./run_tests
 
 re:			fclean all
 
-.PHONY:		all clean fclean re
+.PHONY:		all clean fclean re test

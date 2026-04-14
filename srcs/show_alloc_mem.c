@@ -6,7 +6,7 @@
 /*   By: hclaude <hclaude@student.42mulhouse.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 15:22:55 by hclaude           #+#    #+#             */
-/*   Updated: 2026/02/19 16:03:38 by hclaude          ###   ########.fr       */
+/*   Updated: 2026/04/14 15:55:47 by hclaude          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -136,8 +136,6 @@ static size_t print_large(void)
 		void *end = (void *)((char *)start + payload);
 		ft_putstr("LARGE : ");
 		print_addr((void *)curr);
-		ft_putstr(" - ");
-		print_addr(end);
 		ft_putchar('\n');
 		print_addr(start);
 		ft_putstr(" - ");
@@ -151,7 +149,7 @@ static size_t print_large(void)
 	return (total);
 }
 
-void *show_alloc_mem(void)
+void show_alloc_mem(void)
 {
 	size_t total;
 
@@ -164,5 +162,4 @@ void *show_alloc_mem(void)
 	ft_putnbr(total);
 	ft_putstr(" bytes\n");
 	pthread_mutex_unlock(&g_mutex);
-	return (NULL);
 }

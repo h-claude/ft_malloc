@@ -6,7 +6,7 @@
 /*   By: hclaude <hclaude@student.42mulhouse.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/13 19:49:24 by hclaude           #+#    #+#             */
-/*   Updated: 2026/02/24 18:33:08 by hclaude          ###   ########.fr       */
+/*   Updated: 2026/04/14 15:42:59 by hclaude          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 int size_to_size_index(size_t size)
 {
-	if (size <= 0 || size > 1024)
+	if (size == 0 || size > 1024)
 		return (-1);
 
 	if (size <= 32)
@@ -98,7 +98,7 @@ void page_number_distributor(void *current_ptr)
 	int base_pages = DEFAULT_PAGE_COUNT / 6;
 	int remainder = DEFAULT_PAGE_COUNT % 6;
 
-	if (!current_ptr || g_pagesize <= 0)
+	if (!current_ptr || g_data.pagesize <= 0)
 		return;
 
 	while (i < 6)
@@ -109,7 +109,7 @@ void page_number_distributor(void *current_ptr)
 		{
 			t_block *old_head = g_data.free_blocks.blocks[i];
 			t_block *new_head = (t_block *)current_ptr;
-			size_t zone_size = pages * g_pagesize;
+			size_t zone_size = pages * g_data.pagesize;
 			size_t processed = 0;
 			int added_blocks = 0;
 
@@ -140,22 +140,14 @@ int init_data()
 	void *ptr;
 	t_arena *last_arena;
 
-	if (g_pagesize == 0)
+	if (g_data.pagesize == 0)
 	{
-		g_pagesize = getpagesize();
+		g_data.pagesize = getpagesize();
 		g_data.arena = NULL;
 		g_data.big_blocks.blocks = NULL;
 		g_data.big_blocks.size_blocks = 0;
 	}
-	// if (g_data.free_blocks.size_blocks[BLOCKS_32] +
-	//		g_data.free_blocks.size_blocks[BLOCKS_64] +
-	//		g_data.free_blocks.size_blocks[BLOCKS_128] +
-	//		g_data.free_blocks.size_blocks[BLOCKS_256] +
-	//		g_data.free_blocks.size_blocks[BLOCKS_512] +
-	//		g_data.free_blocks.size_blocks[BLOCKS_1024] ==
-	//	0)
-	//{
-	ptr = mmap(NULL, g_pagesize * DEFAULT_PAGE_COUNT + sizeof(t_arena), PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+	ptr = mmap(NULL, g_data.pagesize * DEFAULT_PAGE_COUNT + sizeof(t_arena), PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
 	if (ptr == MAP_FAILED)
 		return (-1);
 	last_arena = g_data.arena;

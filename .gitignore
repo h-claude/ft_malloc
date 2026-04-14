@@ -25,3 +25,9 @@ vgcore.*
 *.d
 
 a.out.dSYM
+
+srcs/visualizer.c
+srcs/test.c
+srcs/test_full.c
+malloc_tests
+malloc_tests.dSYM
