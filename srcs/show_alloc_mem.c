@@ -6,7 +6,7 @@
 /*   By: hclaude <hclaude@student.42mulhouse.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 15:22:55 by hclaude           #+#    #+#             */
-/*   Updated: 2026/04/14 15:55:47 by hclaude          ###   ########.fr       */
+/*   Updated: 2026/05/29 17:16:40 by hclaude          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ static void ft_putchar(char c)
 	write(1, &c, 1);
 }
 
-static void ft_putstr(char *s)
+static void ft_putstr(const char *s)
 {
 	while (*s)
 		write(1, s++, 1);
@@ -48,76 +48,79 @@ static void print_addr(void *ptr)
 	ft_puthex((unsigned long)ptr);
 }
 
-static size_t print_block_list(t_block *head)
-{
-	size_t total;
 
-	total = 0;
-	while (head)
+static int arena_has_blocks(t_arena *arena, int start, int end)
+{
+	void    *a_start;
+	void    *a_end;
+	t_block *b;
+
+	a_start = (char *)arena + sizeof(t_arena);
+	a_end   = (char *)arena + arena->size;
+	for (int i = start; i <= end; i++)
 	{
-		size_t block_size = SIZE_VALUE(head->size);
-		void *start = (void *)((char *)head + sizeof(t_block));
-		void *end = (void *)((char *)head + block_size);
-		print_addr(start);
-		ft_putstr(" - ");
-		print_addr(end);
-		ft_putstr(" : ");
-		ft_putnbr(block_size);
-		ft_putstr(" bytes\n");
-		total += block_size;
-		head = head->next;
+		b = g_data.allocated_blocks.blocks[i];
+		while (b)
+		{
+			if ((void *)b >= a_start && (void *)b < a_end)
+				return (1);
+			b = b->next;
+		}
 	}
-	return (total);
+	return (0);
 }
 
-static int has_alloc(int start, int end)
+static size_t print_zone(const char *label, int start, int end)
 {
-	for (int i = start; i <= end; i++)
-		if (g_data.allocated_blocks.size_blocks[i] > 0)
-			return (1);
-	return (0);
+	t_arena *arena;
+	size_t   total;
+
+	total = 0;
+	arena = g_data.arena;
+	while (arena)
+	{
+		if (arena_has_blocks(arena, start, end))
+		{
+			ft_putstr(label);
+			print_addr((void *)arena);
+			ft_putchar('\n');
+			for (int i = start; i <= end; i++)
+			{
+				t_block *b = g_data.allocated_blocks.blocks[i];
+				while (b)
+				{
+					void   *a_start = (char *)arena + sizeof(t_arena);
+					void   *a_end   = (char *)arena + arena->size;
+					if ((void *)b >= a_start && (void *)b < a_end)
+					{
+						size_t usable = SIZE_VALUE(b->size) - sizeof(t_block);
+						void  *start_addr = (char *)b + sizeof(t_block);
+						void  *end_addr   = (char *)b + SIZE_VALUE(b->size);
+						print_addr(start_addr);
+						ft_putstr(" - ");
+						print_addr(end_addr);
+						ft_putstr(" : ");
+						ft_putnbr(usable);
+						ft_putstr(" bytes\n");
+						total += usable;
+					}
+					b = b->next;
+				}
+			}
+		}
+		arena = arena->next;
+	}
+	return (total);
 }
 
 static size_t print_tiny(void)
 {
-	size_t total;
-	t_arena *arena;
-
-	total = 0;
-	if (!has_alloc(BLOCKS_32, BLOCKS_128))
-		return (0);
-	arena = g_data.arena;
-	while (arena)
-	{
-		ft_putstr("TINY : ");
-		print_addr((void *)arena);
-		ft_putchar('\n');
-		arena = arena->next;
-	}
-	for (int i = BLOCKS_32; i <= BLOCKS_128; i++)
-		total += print_block_list(g_data.allocated_blocks.blocks[i]);
-	return (total);
+	return (print_zone("TINY : ", BLOCKS_32, BLOCKS_128));
 }
 
 static size_t print_small(void)
 {
-	size_t total;
-	t_arena *arena;
-
-	total = 0;
-	if (!has_alloc(BLOCKS_256, BLOCKS_1024))
-		return (0);
-	arena = g_data.arena;
-	while (arena)
-	{
-		ft_putstr("SMALL : ");
-		print_addr((void *)arena);
-		ft_putchar('\n');
-		arena = arena->next;
-	}
-	for (int i = BLOCKS_256; i <= BLOCKS_1024; i++)
-		total += print_block_list(g_data.allocated_blocks.blocks[i]);
-	return (total);
+	return (print_zone("SMALL : ", BLOCKS_256, BLOCKS_1040));
 }
 
 static size_t print_large(void)

@@ -6,7 +6,7 @@
 /*   By: hclaude <hclaude@student.42mulhouse.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/13 19:48:46 by hclaude           #+#    #+#             */
-/*   Updated: 2026/04/14 15:42:43 by hclaude          ###   ########.fr       */
+/*   Updated: 2026/06/03 17:24:49 by hclaude          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,14 +15,53 @@
 t_data g_data = {0};
 pthread_mutex_t g_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-void get_more_blocks(int index_size)
+int init_zone(int index)
+{
+	size_t	block_size;
+	size_t	pages;
+	size_t	total;
+	void	*ptr;
+	t_arena	*arena;
+
+	block_size = block_size_for_index(index);
+	pages = (sizeof(t_arena) + 100 * block_size + g_data.pagesize - 1) / g_data.pagesize;
+	total = pages * g_data.pagesize;
+	ptr = mmap(NULL, total, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+	if (ptr == MAP_FAILED)
+		return (-1);
+	arena = (t_arena *)ptr;
+	arena->size = total;
+	arena->next = g_data.arena;
+	g_data.arena = arena;
+	g_data.zone_bump[index] = (char *)ptr + sizeof(t_arena);
+	g_data.zone_end[index] = (char *)ptr + total;
+	return (0);
+}
+
+static t_block *carve_bump(int index_size)
+{
+	t_block *block;
+
+	if (!g_data.zone_bump[index_size] ||
+		(char *)g_data.zone_bump[index_size] + block_size_for_index(index_size) > (char *)g_data.zone_end[index_size])
+		return (NULL);
+	block = (t_block *)g_data.zone_bump[index_size];
+	block->size = SET_ALLOC(block_size_for_index(index_size));
+	block->next = g_data.allocated_blocks.blocks[index_size];
+	g_data.allocated_blocks.blocks[index_size] = block;
+	g_data.allocated_blocks.size_blocks[index_size]++;
+	g_data.zone_bump[index_size] = (char *)g_data.zone_bump[index_size] + block_size_for_index(index_size);
+	return (block);
+}
+
+static void get_more_blocks(int index_size)
 {
 	t_block *tmp_block;
 	t_block *new_block;
-	int tmp_index = index_size;
+	int     tmp_index;
 
-	tmp_index++;
-	while (!g_data.free_blocks.size_blocks[index_size] && tmp_index < 6 && tmp_index > 0 && tmp_index != index_size)
+	tmp_index = index_size + 1;
+	while (!g_data.free_blocks.size_blocks[index_size] && tmp_index < 5)
 	{
 		if (!g_data.free_blocks.size_blocks[tmp_index])
 			tmp_index++;
@@ -32,8 +71,13 @@ void get_more_blocks(int index_size)
 			if (!tmp_block)
 				break;
 			g_data.free_blocks.blocks[tmp_index] = tmp_block->next;
-			g_data.free_blocks.size_blocks[tmp_index]--;
 			size_t block_size = SIZE_VALUE(tmp_block->size);
+			if (block_size != block_size_for_index(tmp_index) || block_size < 2 * sizeof(t_block))
+			{
+				g_data.free_blocks.blocks[tmp_index] = tmp_block;
+				break;
+			}
+			g_data.free_blocks.size_blocks[tmp_index]--;
 			new_block = (t_block *)((char *)tmp_block + block_size / 2);
 			tmp_block->size = SET_FREE(block_size / 2);
 			new_block->size = SET_FREE(block_size / 2);
@@ -45,33 +89,49 @@ void get_more_blocks(int index_size)
 		}
 	}
 	if (!g_data.free_blocks.size_blocks[index_size])
-		init_data();
+		init_zone(index_size);
 }
 
-void *alloc_block(int index_size)
+static void *alloc_block_unlocked(int index_size)
 {
 	t_block *ret_ptr;
 
-	if (!g_data.free_blocks.size_blocks[index_size])
+	if (g_data.free_blocks.size_blocks[index_size])
 	{
-		get_more_blocks(index_size);
-		if (!g_data.free_blocks.size_blocks[index_size])
+		ret_ptr = g_data.free_blocks.blocks[index_size];
+		g_data.free_blocks.blocks[index_size] = ret_ptr->next;
+		ret_ptr->size = SET_ALLOC(ret_ptr->size);
+		ret_ptr->next = g_data.allocated_blocks.blocks[index_size];
+		g_data.allocated_blocks.blocks[index_size] = ret_ptr;
+		g_data.free_blocks.size_blocks[index_size]--;
+		g_data.allocated_blocks.size_blocks[index_size]++;
+	}
+	else
+	{
+		ret_ptr = carve_bump(index_size);
+		if (!ret_ptr)
 		{
-			return (pthread_mutex_unlock(&g_mutex), NULL);
+			get_more_blocks(index_size);
+			if (g_data.free_blocks.size_blocks[index_size])
+			{
+				ret_ptr = g_data.free_blocks.blocks[index_size];
+				g_data.free_blocks.blocks[index_size] = ret_ptr->next;
+				ret_ptr->size = SET_ALLOC(ret_ptr->size);
+				ret_ptr->next = g_data.allocated_blocks.blocks[index_size];
+				g_data.allocated_blocks.blocks[index_size] = ret_ptr;
+				g_data.free_blocks.size_blocks[index_size]--;
+				g_data.allocated_blocks.size_blocks[index_size]++;
+			}
+			else
+				ret_ptr = carve_bump(index_size);
 		}
 	}
-	ret_ptr = g_data.free_blocks.blocks[index_size];
-	g_data.free_blocks.blocks[index_size] = ret_ptr->next;
-	ret_ptr->size = SET_ALLOC(ret_ptr->size);
-	ret_ptr->next = g_data.allocated_blocks.blocks[index_size];
-	g_data.allocated_blocks.blocks[index_size] = ret_ptr;
-	g_data.free_blocks.size_blocks[index_size]--;
-	g_data.allocated_blocks.size_blocks[index_size]++;
-	pthread_mutex_unlock(&g_mutex);
-	return ((void *)ret_ptr + sizeof(t_block));
+	if (!ret_ptr)
+		return (NULL);
+	return ((char *)ret_ptr + sizeof(t_block));
 }
 
-void *alloc_big_block(size_t size)
+static void *alloc_big_block_unlocked(size_t size)
 {
 	void *ptr;
 	t_block *header;
@@ -79,45 +139,48 @@ void *alloc_big_block(size_t size)
 	ptr = mmap(NULL, size + sizeof(t_block), PROT_READ | PROT_WRITE,
 			   MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
 	if (ptr == MAP_FAILED)
-	{
-		pthread_mutex_unlock(&g_mutex);
 		return (NULL);
-	}
 	header = (t_block *)ptr;
 	header->size = SET_ALLOC(size);
 	header->next = g_data.big_blocks.blocks;
 	g_data.big_blocks.blocks = header;
 	g_data.big_blocks.size_blocks++;
-	pthread_mutex_unlock(&g_mutex);
-	return ((void *)header + sizeof(t_block));
+	return ((char *)header + sizeof(t_block));
 }
 
-void *malloc(size_t size)
+void *malloc_unlocked(size_t size)
 {
 	int index_size = 0;
-	pthread_mutex_lock(&g_mutex);
 	if (g_data.pagesize == 0)
 	{
 		if (init_data() == -1)
 		{
-			pthread_mutex_unlock(&g_mutex);
 			return (NULL);
 		}
 	}
 	if (size == 0 || size > SIZE_MAX - sizeof(t_block))
 	{
-		pthread_mutex_unlock(&g_mutex);
 		return (NULL);
 	}
 
 	index_size = size_to_size_index(size + sizeof(t_block));
 
-	if (index_size == -1 && size + sizeof(t_block) > 1024)
-		return (alloc_big_block(size));
+	if (index_size == -1 && size + sizeof(t_block) > 1040)
+		return (alloc_big_block_unlocked(size));
 	else if (index_size == -1)
-		return pthread_mutex_unlock(&g_mutex), NULL;
+		return (NULL);
 
-	return (alloc_block(index_size));
+	return (alloc_block_unlocked(index_size));
+}
+
+void *malloc(size_t size)
+{
+	void *ptr;
+
+	pthread_mutex_lock(&g_mutex);
+	ptr = malloc_unlocked(size);
+	pthread_mutex_unlock(&g_mutex);
+	return (ptr);
 }
 
 // Comment faire pour que j'ai une bonne allocation memoire en fonction de la taille

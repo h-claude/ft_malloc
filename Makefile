@@ -40,10 +40,17 @@ fclean:		clean
 			rm -f $(NAME)
 			rm -f $(LINK_NAME)
 
+TEST_SRC	= tests/test_malloc.c
+TEST_BIN	= run_tests
+
 test:		all
-			$(CC) -Wall -Wextra -Iincludes -o run_tests test_malloc.c -L. -lft_malloc -lpthread
-			DYLD_LIBRARY_PATH=. LD_LIBRARY_PATH=. ./run_tests
+			$(CC) -Wall -Wextra -Iincludes -DUSE_FT_MALLOC -o $(TEST_BIN) $(TEST_SRC) -L. -lft_malloc -lpthread
+			DYLD_LIBRARY_PATH=. LD_LIBRARY_PATH=. ./$(TEST_BIN)
+
+test_system:
+			$(CC) -Wall -Wextra -Iincludes -o $(TEST_BIN) $(TEST_SRC) -lpthread
+			./$(TEST_BIN)
 
 re:			fclean all
 
-.PHONY:		all clean fclean re test
+.PHONY:		all clean fclean re test test_system
