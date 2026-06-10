@@ -92,20 +92,26 @@ static void get_more_blocks(int index_size)
 		init_zone(index_size);
 }
 
-static void *alloc_block_unlocked(int index_size)
+static t_block *pop_free_to_allocated(int index_size)
+{
+	t_block *block;
+
+	block = g_data.free_blocks.blocks[index_size];
+	g_data.free_blocks.blocks[index_size] = block->next;
+	block->size = SET_ALLOC(block->size);
+	block->next = g_data.allocated_blocks.blocks[index_size];
+	g_data.allocated_blocks.blocks[index_size] = block;
+	g_data.free_blocks.size_blocks[index_size]--;
+	g_data.allocated_blocks.size_blocks[index_size]++;
+	return (block);
+}
+
+static void *alloc_block(int index_size)
 {
 	t_block *ret_ptr;
 
 	if (g_data.free_blocks.size_blocks[index_size])
-	{
-		ret_ptr = g_data.free_blocks.blocks[index_size];
-		g_data.free_blocks.blocks[index_size] = ret_ptr->next;
-		ret_ptr->size = SET_ALLOC(ret_ptr->size);
-		ret_ptr->next = g_data.allocated_blocks.blocks[index_size];
-		g_data.allocated_blocks.blocks[index_size] = ret_ptr;
-		g_data.free_blocks.size_blocks[index_size]--;
-		g_data.allocated_blocks.size_blocks[index_size]++;
-	}
+		ret_ptr = pop_free_to_allocated(index_size);
 	else
 	{
 		ret_ptr = carve_bump(index_size);
@@ -113,15 +119,7 @@ static void *alloc_block_unlocked(int index_size)
 		{
 			get_more_blocks(index_size);
 			if (g_data.free_blocks.size_blocks[index_size])
-			{
-				ret_ptr = g_data.free_blocks.blocks[index_size];
-				g_data.free_blocks.blocks[index_size] = ret_ptr->next;
-				ret_ptr->size = SET_ALLOC(ret_ptr->size);
-				ret_ptr->next = g_data.allocated_blocks.blocks[index_size];
-				g_data.allocated_blocks.blocks[index_size] = ret_ptr;
-				g_data.free_blocks.size_blocks[index_size]--;
-				g_data.allocated_blocks.size_blocks[index_size]++;
-			}
+				ret_ptr = pop_free_to_allocated(index_size);
 			else
 				ret_ptr = carve_bump(index_size);
 		}
@@ -131,7 +129,7 @@ static void *alloc_block_unlocked(int index_size)
 	return ((char *)ret_ptr + sizeof(t_block));
 }
 
-static void *alloc_big_block_unlocked(size_t size)
+static void *alloc_big_block(size_t size)
 {
 	void *ptr;
 	t_block *header;
@@ -166,11 +164,11 @@ void *malloc_unlocked(size_t size)
 	index_size = size_to_size_index(size + sizeof(t_block));
 
 	if (index_size == -1 && size + sizeof(t_block) > 1040)
-		return (alloc_big_block_unlocked(size));
+		return (alloc_big_block(size));
 	else if (index_size == -1)
 		return (NULL);
 
-	return (alloc_block_unlocked(index_size));
+	return (alloc_block(index_size));
 }
 
 void *malloc(size_t size)
