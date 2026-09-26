@@ -6,7 +6,7 @@
 /*   By: hclaude <hclaude@student.42mulhouse.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/13 19:48:46 by hclaude           #+#    #+#             */
-/*   Updated: 2026/06/03 17:24:49 by hclaude          ###   ########.fr       */
+/*   Updated: 2026/09/27 01:39:11 by hclaude          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,7 @@ static void get_more_blocks(int index_size)
 	int     tmp_index;
 
 	tmp_index = index_size + 1;
-	while (!g_data.free_blocks.size_blocks[index_size] && tmp_index < 5)
+	while (!g_data.free_blocks.size_blocks[index_size] && tmp_index < 6)
 	{
 		if (!g_data.free_blocks.size_blocks[tmp_index])
 			tmp_index++;
@@ -78,10 +78,11 @@ static void get_more_blocks(int index_size)
 				break;
 			}
 			g_data.free_blocks.size_blocks[tmp_index]--;
-			new_block = (t_block *)((char *)tmp_block + block_size / 2);
-			tmp_block->size = SET_FREE(block_size / 2);
-			new_block->size = SET_FREE(block_size / 2);
-			tmp_index = size_to_size_index(block_size / 2);
+			size_t half = block_size_for_index(tmp_index - 1);
+			new_block = (t_block *)((char *)tmp_block + half);
+			tmp_block->size = SET_FREE(half);
+			new_block->size = SET_FREE(half);
+			tmp_index = size_to_size_index(half);
 			tmp_block->next = new_block;
 			new_block->next = g_data.free_blocks.blocks[tmp_index];
 			g_data.free_blocks.blocks[tmp_index] = tmp_block;

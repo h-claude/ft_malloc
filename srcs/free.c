@@ -34,6 +34,7 @@ static void free_big_block(t_block *header)
 {
 	t_block *big_curr;
 	t_block *big_prev;
+	t_block *big_next;
 	size_t  total_size;
 
 	total_size = SIZE_VALUE(header->size) + sizeof(t_block);
@@ -46,12 +47,13 @@ static void free_big_block(t_block *header)
 	}
 	if (!big_curr)
 		return;
+	big_next = big_curr->next;
 	if (munmap(header, total_size) == -1)
 		return;
 	if (big_prev)
-		big_prev->next = big_curr->next;
+		big_prev->next = big_next;
 	else
-		g_data.big_blocks.blocks = big_curr->next;
+		g_data.big_blocks.blocks = big_next;
 	g_data.big_blocks.size_blocks--;
 }
 
@@ -124,7 +126,7 @@ void free_unlocked(void *ptr)
 	if (!remove_from_allocated(header, size_index))
 		return;
 	header->size = SET_FREE(header->size);
-	try_coalesce(header, &size_index);
+	try_merge(header, &size_index);
 	add_to_free(header, size_index);
 }
 
