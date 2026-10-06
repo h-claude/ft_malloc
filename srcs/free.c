@@ -37,7 +37,7 @@ static void free_big_block(t_block *header)
 	t_block *big_next;
 	size_t  total_size;
 
-	total_size = SIZE_VALUE(header->size) + sizeof(t_block);
+	total_size = header->size + sizeof(t_block);
 	big_curr = g_data.big_blocks.blocks;
 	big_prev = NULL;
 	while (big_curr && big_curr != header)

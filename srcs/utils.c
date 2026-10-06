@@ -147,7 +147,7 @@ int Is_In_BigBlocks(void *adress)
 	while (current)
 	{
 		void *start = (char *)current + sizeof(t_block);
-		void *end = (char *)current + sizeof(t_block) + SIZE_VALUE(current->size);
+		void *end = (char *)current + sizeof(t_block) + current->size;
 		if (adress >= start && adress < end)
 			return (1);
 		current = current->next;

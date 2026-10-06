@@ -6,7 +6,7 @@
 /*   By: hclaude <hclaude@student.42mulhouse.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/13 19:48:46 by hclaude           #+#    #+#             */
-/*   Updated: 2026/09/27 01:39:11 by hclaude          ###   ########.fr       */
+/*   Updated: 2026/10/06 17:51:35 by hclaude          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -140,7 +140,7 @@ static void *alloc_big_block(size_t size)
 	if (ptr == MAP_FAILED)
 		return (NULL);
 	header = (t_block *)ptr;
-	header->size = SET_ALLOC(size);
+	header->size = size;
 	header->next = g_data.big_blocks.blocks;
 	g_data.big_blocks.blocks = header;
 	g_data.big_blocks.size_blocks++;
@@ -181,38 +181,3 @@ void *malloc(size_t size)
 	pthread_mutex_unlock(&g_mutex);
 	return (ptr);
 }
-
-// Comment faire pour que j'ai une bonne allocation memoire en fonction de la taille
-
-/*
-Fist bah ouais si ta structure existe pas bah ca va pas ca veut dire que t'as pas de memoire allouee DONC
-tu checks si t'as de la memoire POUR CA soit on fait un check de la taille qu'on nous donne soit on check tout le temps l'ensemble de la memoire
-
-Je pense qu'il faut check si la struct existe, ensuite par rapport a la taille demande check si on a ce qu'il faut.
-Premier cas si on a pas la struct on init
-Deuxieme cas si on a pas la memoire
-Soit on commence par le plus petit pour chercher a fusionner soit on cherche les plus grands pour les fragmenter
-
-Quel est le plus opti chercher celui qui a le plus grand nombre par exemple 1000 de 32 OU par exemple prioriser celui qui est le moins utiliser par exemple
-1024 0 utilise
-
-faire une fonction qui va fragmenter/defragmenter la memoire en fonction du besoin
-
-Est il possible de d'avoir un fonctionnement qui permet de faciliter la refragmentation de la memoire
-
-
-note :
-
-Quand j'alloue je mets pas a la fin mais au debut
-Pour la fusion je check dans la memoire + sa taille pour voir si le prochain est libre ou non et dans ce cas le fusionner
-
-Quand je free je dois fusionner avec le suivant ou le precedent si possible
-quand j'alloue soit je prends le premier bloc libre soit je split
-un bloc plus gros au dessus.
-
-A chaque mmap je dois maj ma structure et enregistrer la page allouee pour m'aider a fusionner
-
-ajouter dans chaque block un flag pour savoir si il est libre ou non
-
-surement devoir ajouter des variables pour alligner mon header
-*/

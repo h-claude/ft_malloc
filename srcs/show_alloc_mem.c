@@ -6,7 +6,7 @@
 /*   By: hclaude <hclaude@student.42mulhouse.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 15:22:55 by hclaude           #+#    #+#             */
-/*   Updated: 2026/05/29 17:16:40 by hclaude          ###   ########.fr       */
+/*   Updated: 2026/10/06 17:52:43 by hclaude          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,45 +70,95 @@ static int arena_has_blocks(t_arena *arena, int start, int end)
 	return (0);
 }
 
-static size_t print_zone(const char *label, int start, int end)
+static t_arena *next_arena(t_arena *prev, int start, int end)
 {
 	t_arena *arena;
-	size_t   total;
+	t_arena *best;
 
-	total = 0;
+	best = NULL;
 	arena = g_data.arena;
 	while (arena)
 	{
-		if (arena_has_blocks(arena, start, end))
-		{
-			ft_putstr(label);
-			print_addr((void *)arena);
-			ft_putchar('\n');
-			for (int i = start; i <= end; i++)
-			{
-				t_block *b = g_data.allocated_blocks.blocks[i];
-				while (b)
-				{
-					void   *a_start = (char *)arena + sizeof(t_arena);
-					void   *a_end   = (char *)arena + arena->size;
-					if ((void *)b >= a_start && (void *)b < a_end)
-					{
-						size_t usable = SIZE_VALUE(b->size) - sizeof(t_block);
-						void  *start_addr = (char *)b + sizeof(t_block);
-						void  *end_addr   = (char *)b + SIZE_VALUE(b->size);
-						print_addr(start_addr);
-						ft_putstr(" - ");
-						print_addr(end_addr);
-						ft_putstr(" : ");
-						ft_putnbr(usable);
-						ft_putstr(" bytes\n");
-						total += usable;
-					}
-					b = b->next;
-				}
-			}
-		}
+		if ((!prev || arena > prev) && (!best || arena < best)
+			&& arena_has_blocks(arena, start, end))
+			best = arena;
 		arena = arena->next;
+	}
+	return (best);
+}
+
+static t_block *next_block_in_arena(t_arena *arena, t_block *prev, int start, int end)
+{
+	void    *a_start;
+	void    *a_end;
+	t_block *b;
+	t_block *best;
+
+	a_start = (char *)arena + sizeof(t_arena);
+	a_end   = (char *)arena + arena->size;
+	best = NULL;
+	for (int i = start; i <= end; i++)
+	{
+		b = g_data.allocated_blocks.blocks[i];
+		while (b)
+		{
+			if ((void *)b >= a_start && (void *)b < a_end
+				&& (!prev || b > prev) && (!best || b < best))
+				best = b;
+			b = b->next;
+		}
+	}
+	return (best);
+}
+
+static t_block *next_big_block(t_block *prev)
+{
+	t_block *curr;
+	t_block *best;
+
+	best = NULL;
+	curr = g_data.big_blocks.blocks;
+	while (curr)
+	{
+		if ((!prev || curr > prev) && (!best || curr < best))
+			best = curr;
+		curr = curr->next;
+	}
+	return (best);
+}
+
+static size_t print_block(void *start_addr, size_t usable)
+{
+	print_addr(start_addr);
+	ft_putstr(" - ");
+	print_addr((char *)start_addr + usable);
+	ft_putstr(" : ");
+	ft_putnbr(usable);
+	ft_putstr(" bytes\n");
+	return (usable);
+}
+
+static size_t print_zone(const char *label, int start, int end)
+{
+	t_arena *arena;
+	t_block *b;
+	size_t   total;
+
+	total = 0;
+	arena = next_arena(NULL, start, end);
+	while (arena)
+	{
+		ft_putstr(label);
+		print_addr((void *)arena);
+		ft_putchar('\n');
+		b = next_block_in_arena(arena, NULL, start, end);
+		while (b)
+		{
+			total += print_block((char *)b + sizeof(t_block),
+					SIZE_VALUE(b->size) - sizeof(t_block));
+			b = next_block_in_arena(arena, b, start, end);
+		}
+		arena = next_arena(arena, start, end);
 	}
 	return (total);
 }
@@ -129,25 +179,14 @@ static size_t print_large(void)
 	t_block *curr;
 
 	total = 0;
-	curr = g_data.big_blocks.blocks;
-	if (!curr)
-		return (0);
+	curr = next_big_block(NULL);
 	while (curr)
 	{
-		size_t payload = SIZE_VALUE(curr->size);
-		void *start = (void *)((char *)curr + sizeof(t_block));
-		void *end = (void *)((char *)start + payload);
 		ft_putstr("LARGE : ");
 		print_addr((void *)curr);
 		ft_putchar('\n');
-		print_addr(start);
-		ft_putstr(" - ");
-		print_addr(end);
-		ft_putstr(" : ");
-		ft_putnbr(payload);
-		ft_putstr(" bytes\n");
-		total += payload;
-		curr = curr->next;
+		total += print_block((char *)curr + sizeof(t_block), curr->size);
+		curr = next_big_block(curr);
 	}
 	return (total);
 }
