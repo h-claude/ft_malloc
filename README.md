@@ -34,7 +34,7 @@
   - `Coalescing (try_merge)`: performed inline inside `free()` for classes under 512 bytes once a class holds more than `MIN_BLOCKS_TO_DEFRAG` (3) free blocks — it merges an address-adjacent, same-size, same-arena free neighbor back into a block of the next class up, undoing splits made by `get_more_blocks`. Class 4 (512) is capped out of this path on purpose: two adjacent freed 512-byte blocks are never merged back together, because the result (1024 bytes) doesn't match class 5's actual size (1040) — merging them would misrepresent a block's real capacity to any later allocation that reused it as "class 5". This is a one-way donation, not a reversible split/merge pair.
   - `Large blocks (alloc_big_block)`: requests with payload > 1024 bytes are individually `mmap`'d, tracked in a flat linked list (`t_big_blocks`), store their raw size in the header (they are never in a free state, so no `FLAG_FREE` bit is needed — odd sizes are preserved exactly), and `munmap`'d one-for-one on `free()`.
   - `mmap(2)` / `munmap(2)`: sole mechanism for acquiring and releasing memory from the OS — used both for per-size-class arenas and standalone large blocks; no `sbrk`/`brk` is used.
-  - `getpagesize()`: every arena's `mmap` size is rounded up to a multiple of the system page size.
+  - `sysconf(_SC_PAGESIZE)`: every arena's `mmap` size is rounded up to a multiple of the system page size.
   - `pthread_mutex_lock` / `pthread_mutex_unlock`: a single global `PTHREAD_MUTEX_INITIALIZER` mutex serializes all access to `g_data`. `malloc()`/`free()`/`show_alloc_mem()` lock around their internals; `realloc()` locks once and calls the `_unlocked` variants directly to avoid self-deadlock on the non-recursive mutex.
   - `write(2)`: `show_alloc_mem()` and its helpers format all output with raw `write()` instead of `printf`, keeping the diagnostic path free of libc stdio buffering.
   - `-fvisibility=hidden`: only `malloc`, `free`, `realloc` and `show_alloc_mem` are exported (`PUBLIC` attribute); every internal helper stays private to the library.
@@ -53,7 +53,7 @@
 | Category | Specification |
 | :--- | :--- |
 | **Language & Runtime** | C (GNU C via `gcc`, POSIX.1-2008 primitives), compiled with `-Wall -Wextra -Werror -fPIC -fvisibility=hidden -g3` |
-| **Frameworks & Core Libraries** | None beyond the OS: `mmap(2)` / `munmap(2)`, `getpagesize()`, POSIX Threads (`pthread_mutex_t`), `write(2)` |
+| **Frameworks & Core Libraries** | None beyond the OS: `mmap(2)` / `munmap(2)`, `sysconf(_SC_PAGESIZE)`, POSIX Threads (`pthread_mutex_t`), `write(2)` |
 | **Build & Package Management** | GNU Make, producing a shared object (`-shared`) |
 | **Diagnostics & Testing** | Valgrind (`memcheck`, Linux); macOS `leaks(1)` as the native equivalent |
 

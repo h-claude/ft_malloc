@@ -113,7 +113,7 @@ int init_data()
 {
 	if (g_data.pagesize == 0)
 	{
-		g_data.pagesize = getpagesize();
+		g_data.pagesize = sysconf(_SC_PAGESIZE);
 		g_data.arena = NULL;
 		g_data.big_blocks.blocks = NULL;
 		g_data.big_blocks.size_blocks = 0;
